@@ -16,8 +16,8 @@ def fetch_data(symbol="AAPL"):
     bars = api.get_bars(
         symbol,
         TimeFrame.Minute,
-        start="2026-01-01",
-        end="2026-01-02"
+        start="2025-11-01",
+        end="2026-04-01"
     ).df
 
     filename = f"data/raw/{symbol}.csv"
