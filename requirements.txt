@@ -5,3 +5,7 @@ python-dotenv
 alpaca-trade-api
 ta
 scikit-learn
+lightgbm
+joblib
+pyyaml
+pyarrow

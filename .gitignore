@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+models/
+reports/
+logs/
+data/
+data/processed/
+data/raw/*.parquet
+config/secrets.env

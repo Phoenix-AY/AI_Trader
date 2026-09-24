@@ -1,0 +1,72 @@
+# Intraday ML + paper pipeline. Secrets stay in secrets.env (Alpaca paper keys).
+# news_score is reserved on the feature frame (default 0) for a later news join.
+
+universe:
+  - AAPL
+  - MSFT
+  - NVDA
+  - AMZN
+  - GOOGL
+  - META
+  - TSLA
+  - SPY
+
+data:
+  bar_size: "1Min"
+  resample: "5min"
+  start: "2025-11-01"
+  end: "2026-04-01"
+  timezone: "America/New_York"
+  session_start: "09:30"
+  session_end: "16:00"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+
+labels:
+  horizon_bars: 6          # ~30 minutes on 5m bars
+  threshold: 0.0015        # 0.15% after estimated round-trip costs
+
+features:
+  ema_fast: 9
+  ema_slow: 21
+  rsi_window: 14
+  adx_window: 14
+  vol_window: 20
+  momentum_window: 10
+  volume_z_window: 20
+
+model:
+  type: lightgbm           # lightgbm | random_forest
+  train_months: 3
+  test_days: 10
+  buy_threshold: 0.78
+  exit_threshold: 0.35
+  models_dir: "models"
+  n_estimators: 200
+  learning_rate: 0.05
+  num_leaves: 31
+  min_child_samples: 40
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+
+backtest:
+  initial_capital: 100000
+  risk_per_trade: 0.02
+  fee_bps: 1
+  slippage_bps: 2
+  stop_pct: 0.003
+  take_profit_pct: 0.004
+  cooldown_bars: 12
+  flatten_time: "15:55"
+  max_concurrent_positions: 4
+  metrics_dir: "reports"
+
+paper:
+  poll_seconds: 30
+  flatten_time: "15:55"
+  max_concurrent_positions: 4
+  notional_cap: 25000
+  risk_per_trade: 0.02
+  log_path: "logs/paper.csv"
+  lookback_days: 5

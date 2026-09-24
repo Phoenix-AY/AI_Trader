@@ -1,39 +1,26 @@
-import pandas as pd
-from feature_engineer import add_indicators
-from strategy import generate_signals
-from backtester import run_backtest
-
 import matplotlib.pyplot as plt
+import pandas as pd
 
-# Load data
-df = pd.read_csv("data/raw/AAPL.csv")
+from src.backtester import run_backtest
+from src.config import load_settings
+from src.data_loader.data_loader import load_prepared
+from src.feature_engineer import add_indicators
+from src.rule_based_test.strategy import generate_signals
 
-# Process pipeline
-df = add_indicators(df)
-df = generate_signals(df)
-df = run_backtest(df)
+if __name__ == "__main__":
+    settings = load_settings()
+    df = add_indicators(load_prepared("AAPL", settings), settings)
+    df = generate_signals(df)
+    result = run_backtest(df, settings, symbol="AAPL")
+    df = df.copy()
+    df["equity"] = result.equity
 
-df["future_return"] = df["close"].shift(-5) / df["close"] - 1
+    print(df[["close", "signal"]].tail())
+    print("\nFinal Equity:", result.final_equity)
+    print("Total Trades:", len(result.trades))
+    wins = sum(1 for t in result.trades if t.pnl > 0)
+    print("Win Rate:", (wins / len(result.trades)) if result.trades else 0.0)
 
-# Classification target
-df["target"] = (df["future_return"] > 0).astype(int)
-
-print(df[["close", "signal", "equity"]].tail())
-
-print("\nFinal Equity:", df["equity"].iloc[-1])
-
-
-plt.plot(df["equity"])
-plt.title("Equity Curve")
-plt.show()
-
-print("\nTotal Trades:", (df["signal"] != 0).sum())
-
-returns = df["equity"].pct_change()
-
-print("\nFinal Equity:", df["equity"].iloc[-1])
-print("Total Trades:", (df["signal"] != 0).sum())
-
-print("Win Rate:", (returns > 0).sum() / len(returns))
-print("Avg Return:", returns.mean())
-print("Max Drawdown:", (df["equity"].cummax() - df["equity"]).max())
+    plt.plot(result.equity)
+    plt.title("EMA baseline equity")
+    plt.show()
